@@ -1,5 +1,5 @@
 /*
- * Bing [Last Name]
+ * Bing Shaw Lim
  * CST-250
  * 10/25/2026
  * Minesweeper - Milestone 1 xUnit Tests
