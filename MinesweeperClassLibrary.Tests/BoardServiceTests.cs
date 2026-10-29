@@ -1,8 +1,8 @@
 /*
  * Bing Shaw Lim
  * CST-250
- * 10/25/2026
- * Minesweeper - Milestone 1 xUnit Tests
+ * 10/28/2026
+ * Minesweeper - Milestone 2 xUnit Tests
  * Resources: CST-250 Project Milestone Guide (Grand Canyon University, 2025)
  */
 
@@ -258,6 +258,207 @@ namespace MinesweeperClassLibrary.Tests
             Assert.True(service.DetermineFinalScore(hard, 0) > service.DetermineFinalScore(easy, 0));
             Assert.Equal(1750, service.DetermineFinalScore(easy, 1));
             Assert.Equal(0, service.DetermineFinalScore(lost, 0));
+        }
+
+        //----------------------------------------------------------
+        // Milestone 2: player moves, game state, and the reward
+        //----------------------------------------------------------
+
+        // Visiting a safe cell clears it
+        [Fact]
+        public void VisitCell_ShouldMarkVisited_WhenCellIsSafe()
+        {
+            // Arrange
+            BoardService service = new BoardService();
+            BoardModel board = new BoardModel(3);
+
+            // Act
+            MoveResult result = service.VisitCell(board, 0, 2);
+
+            // Assert
+            Assert.Equal(MoveResult.SafeCellVisited, result);
+            Assert.True(board.Cells[0, 2].IsVisited);
+        }
+
+        // Visiting a bomb returns BombHit and the game is lost
+        [Fact]
+        public void VisitCell_ShouldReturnBombHit_AndLoseGame_WhenCellIsBomb()
+        {
+            // Arrange
+            BoardService service = new BoardService();
+            BoardModel board = new BoardModel(3);
+            board.Cells[1, 1].IsBomb = true;
+
+            // Act
+            MoveResult result = service.VisitCell(board, 1, 1);
+
+            // Assert
+            Assert.Equal(MoveResult.BombHit, result);
+            Assert.Equal(GameState.Lost, service.DetermineGameState(board));
+        }
+
+        // A flagged cell is protected and cannot be visited
+        [Fact]
+        public void VisitCell_ShouldNotVisit_WhenCellIsFlagged()
+        {
+            // Arrange
+            BoardService service = new BoardService();
+            BoardModel board = new BoardModel(3);
+            board.Cells[1, 1].IsBomb = true;
+            board.Cells[2, 2].IsBomb = true;
+            service.ToggleFlag(board, 1, 1);
+
+            // Act
+            MoveResult result = service.VisitCell(board, 1, 1);
+
+            // Assert: the bomb was not visited, so the game is not lost
+            Assert.Equal(MoveResult.CellIsFlagged, result);
+            Assert.False(board.Cells[1, 1].IsVisited);
+            Assert.Equal(GameState.InProgress, service.DetermineGameState(board));
+        }
+
+        // Off-board moves are rejected by both VisitCell and ToggleFlag
+        [Theory]
+        [InlineData(-1, 0)]
+        [InlineData(0, 3)]
+        [InlineData(3, 3)]
+        public void VisitCell_ShouldReturnInvalidCell_WhenOffBoard(int row, int col)
+        {
+            // Arrange
+            BoardService service = new BoardService();
+            BoardModel board = new BoardModel(3);
+
+            // Act and Assert
+            Assert.Equal(MoveResult.InvalidCell, service.VisitCell(board, row, col));
+            Assert.Equal(MoveResult.InvalidCell, service.ToggleFlag(board, row, col));
+        }
+
+        // A second visit to the same cell reports AlreadyVisited
+        [Fact]
+        public void VisitCell_ShouldReturnAlreadyVisited_OnSecondVisit()
+        {
+            // Arrange
+            BoardService service = new BoardService();
+            BoardModel board = new BoardModel(3);
+            service.VisitCell(board, 2, 2);
+
+            // Act and Assert
+            Assert.Equal(MoveResult.AlreadyVisited, service.VisitCell(board, 2, 2));
+        }
+
+        // Visiting the reward cell gives the player one reward and uses up the cell's reward
+        [Fact]
+        public void VisitCell_ShouldCollectReward_WhenCellHasSpecialReward()
+        {
+            // Arrange
+            BoardService service = new BoardService();
+            BoardModel board = new BoardModel(3);
+            board.Cells[0, 0].HasSpecialReward = true;
+
+            // Act
+            MoveResult result = service.VisitCell(board, 0, 0);
+
+            // Assert
+            Assert.Equal(MoveResult.RewardCollected, result);
+            Assert.Equal(1, board.RewardsRemaining);
+            Assert.False(board.Cells[0, 0].HasSpecialReward);
+        }
+
+        // ToggleFlag places a flag, then removes it on the second call
+        [Fact]
+        public void ToggleFlag_ShouldPlaceThenRemoveFlag()
+        {
+            // Arrange
+            BoardService service = new BoardService();
+            BoardModel board = new BoardModel(3);
+
+            // Act and Assert
+            Assert.Equal(MoveResult.FlagPlaced, service.ToggleFlag(board, 1, 2));
+            Assert.True(board.Cells[1, 2].IsFlagged);
+            Assert.Equal(MoveResult.FlagRemoved, service.ToggleFlag(board, 1, 2));
+            Assert.False(board.Cells[1, 2].IsFlagged);
+        }
+
+        // A cleared cell cannot be flagged
+        [Fact]
+        public void ToggleFlag_ShouldReturnAlreadyVisited_WhenCellIsCleared()
+        {
+            // Arrange
+            BoardService service = new BoardService();
+            BoardModel board = new BoardModel(3);
+            service.VisitCell(board, 0, 1);
+
+            // Act and Assert
+            Assert.Equal(MoveResult.AlreadyVisited, service.ToggleFlag(board, 0, 1));
+            Assert.False(board.Cells[0, 1].IsFlagged);
+        }
+
+        // Correctly flagging every bomb (with no wrong flags) also wins the game
+        [Fact]
+        public void DetermineGameState_ShouldReturnWon_WhenAllBombsCorrectlyFlagged()
+        {
+            // Arrange
+            BoardService service = new BoardService();
+            BoardModel board = new BoardModel(3);
+            board.Cells[0, 0].IsBomb = true;
+            board.Cells[2, 2].IsBomb = true;
+            service.ToggleFlag(board, 0, 0);
+            service.ToggleFlag(board, 2, 2);
+
+            // Act and Assert
+            Assert.Equal(GameState.Won, service.DetermineGameState(board));
+        }
+
+        // A wrong flag on a safe cell does not win the game
+        [Fact]
+        public void DetermineGameState_ShouldReturnInProgress_WhenAFlagIsWrong()
+        {
+            // Arrange
+            BoardService service = new BoardService();
+            BoardModel board = new BoardModel(3);
+            board.Cells[0, 0].IsBomb = true;
+            service.ToggleFlag(board, 0, 0);
+            service.ToggleFlag(board, 1, 1);
+
+            // Act and Assert
+            Assert.Equal(GameState.InProgress, service.DetermineGameState(board));
+        }
+
+        // Full play-through: collect the reward, use it, then clear every safe cell to win
+        [Fact]
+        public void PlayThrough_ShouldCollectAndUseReward_ThenWin()
+        {
+            // Arrange: 3 x 3 board, bomb at (2,0), reward at (0,0)
+            BoardService service = new BoardService();
+            BoardModel board = new BoardModel(3);
+            board.Cells[2, 0].IsBomb = true;
+            board.Cells[0, 0].HasSpecialReward = true;
+            service.CountBombsNearby(board);
+
+            // Act: collect the reward, then use it
+            Assert.Equal(MoveResult.RewardCollected, service.VisitCell(board, 0, 0));
+            CellModel? revealed = service.UseSpecialBonus(board);
+
+            // Assert: the Hint flagged the only bomb and the reward was spent
+            Assert.NotNull(revealed);
+            Assert.Equal(2, revealed!.Row);
+            Assert.Equal(0, revealed.Column);
+            Assert.Equal(0, board.RewardsRemaining);
+
+            // Act: visit every remaining safe cell
+            for (int row = 0; row < 3; row++)
+            {
+                for (int col = 0; col < 3; col++)
+                {
+                    if (!board.Cells[row, col].IsBomb)
+                    {
+                        service.VisitCell(board, row, col);
+                    }
+                }
+            }
+
+            // Assert
+            Assert.Equal(GameState.Won, service.DetermineGameState(board));
         }
     }
 }

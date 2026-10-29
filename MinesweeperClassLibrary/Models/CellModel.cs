@@ -1,8 +1,8 @@
 /*
  * Bing Shaw Lim
  * CST-250
- * 10/25/2026
- * Minesweeper - Milestone 1
+ * 10/28/2026
+ * Minesweeper - Milestone 2
  * Resources: CST-250 Project Milestone Guide (Grand Canyon University, 2025)
  */
 
@@ -15,8 +15,10 @@ namespace MinesweeperClassLibrary.Models
     public class CellModel
     {
         // Class level properties
-        public int Row { get; set; }
-        public int Column { get; set; }
+        // Row and Column have private setters (encapsulation): a cell's location is
+        // fixed by its constructor and cannot be changed later
+        public int Row { get; private set; }
+        public int Column { get; private set; }
         public bool IsVisited { get; set; }
         public bool IsBomb { get; set; }
         public bool IsFlagged { get; set; }

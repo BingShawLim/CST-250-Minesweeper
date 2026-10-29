@@ -1,8 +1,8 @@
 /*
  * Bing Shaw Lim
  * CST-250
- * 10/25/2026
- * Minesweeper - Milestone 1
+ * 10/28/2026
+ * Minesweeper - Milestone 2
  * Resources: CST-250 Project Milestone Guide (Grand Canyon University, 2025)
  */
 
@@ -15,10 +15,12 @@ namespace MinesweeperClassLibrary.Models
     public class BoardModel
     {
         // Class level properties
-        public int Size { get; set; }
+        // Size and Cells have private setters (encapsulation): once the board is built,
+        // outside code can change a cell's state but can never replace the grid itself
+        public int Size { get; private set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
-        public CellModel[,] Cells { get; set; }
+        public CellModel[,] Cells { get; private set; }
         // Difficulty level: 1 = easy, 2 = medium, 3 = hard
         public int Difficulty { get; set; }
         public int RewardsRemaining { get; set; }

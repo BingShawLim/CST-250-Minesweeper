@@ -1,8 +1,8 @@
 /*
  * Bing Shaw Lim
  * CST-250
- * 10/25/2026
- * Minesweeper - Milestone 1
+ * 10/28/2026
+ * Minesweeper - Milestone 2
  * Resources: CST-250 Project Milestone Guide (Grand Canyon University, 2025)
  */
 
@@ -161,10 +161,88 @@ namespace MinesweeperClassLibrary.Services.BusinessLogicLayer
         }
 
         /// <summary>
+        /// Visit (clear) one cell. The rules for a move live here, not in the user interface:
+        /// flagged cells are protected, a bomb loses the game, and a reward cell gives the
+        /// player one Hint to use later.
+        /// </summary>
+        /// <param name="board">The board in play</param>
+        /// <param name="row">Row of the cell to visit</param>
+        /// <param name="col">Column of the cell to visit</param>
+        /// <returns>A MoveResult that tells the user interface what happened</returns>
+        public MoveResult VisitCell(BoardModel board, int row, int col)
+        {
+            // Reject moves that are off the board
+            if (!IsOnBoard(board, row, col))
+            {
+                return MoveResult.InvalidCell;
+            }
+            CellModel cell = board.Cells[row, col];
+
+            // A flag protects the cell from an accidental visit
+            if (cell.IsFlagged)
+            {
+                return MoveResult.CellIsFlagged;
+            }
+            if (cell.IsVisited)
+            {
+                return MoveResult.AlreadyVisited;
+            }
+
+            // Clear the cell
+            cell.IsVisited = true;
+            if (cell.IsBomb)
+            {
+                return MoveResult.BombHit;
+            }
+
+            // A reward cell gives the player one reward, then the reward is used up
+            if (cell.HasSpecialReward)
+            {
+                CollectReward(board, cell);
+                return MoveResult.RewardCollected;
+            }
+            return MoveResult.SafeCellVisited;
+        } // End of VisitCell method
+
+        /// <summary>
+        /// Place a flag on an unvisited cell, or remove the flag if the cell is already flagged
+        /// </summary>
+        /// <param name="board">The board in play</param>
+        /// <param name="row">Row of the cell</param>
+        /// <param name="col">Column of the cell</param>
+        /// <returns>FlagPlaced, FlagRemoved, AlreadyVisited, or InvalidCell</returns>
+        public MoveResult ToggleFlag(BoardModel board, int row, int col)
+        {
+            if (!IsOnBoard(board, row, col))
+            {
+                return MoveResult.InvalidCell;
+            }
+            CellModel cell = board.Cells[row, col];
+
+            // A cleared cell cannot be flagged
+            if (cell.IsVisited)
+            {
+                return MoveResult.AlreadyVisited;
+            }
+            cell.IsFlagged = !cell.IsFlagged;
+            return cell.IsFlagged ? MoveResult.FlagPlaced : MoveResult.FlagRemoved;
+        } // End of ToggleFlag method
+
+        /// <summary>
+        /// Move a reward from the cell to the player (private helper - encapsulation)
+        /// </summary>
+        /// <param name="board">The board in play</param>
+        /// <param name="cell">The reward cell that was just visited</param>
+        private void CollectReward(BoardModel board, CellModel cell)
+        {
+            cell.HasSpecialReward = false;
+            board.RewardsRemaining++;
+        }
+
+        /// <summary>
         /// Inspect the board and decide the game state.
         /// Lost: a bomb was visited. Won: every safe cell is visited (or every bomb correctly
         /// flagged with no wrong flags). Otherwise the game is still in progress (StillPlaying).
-        /// Full gameplay use arrives in Milestone 2.
         /// </summary>
         /// <param name="board">The board to inspect</param>
         /// <returns>The current GameState</returns>
@@ -210,8 +288,7 @@ namespace MinesweeperClassLibrary.Services.BusinessLogicLayer
         } // End of DetermineGameState method
 
         /// <summary>
-        /// Use one collected Hint reward: reveal one random, unflagged bomb.
-        /// Full gameplay use arrives in Milestone 2.
+        /// Use one collected Hint reward: reveal one random, unflagged bomb by flagging it.
         /// </summary>
         /// <param name="board">The board in play</param>
         /// <returns>The revealed bomb cell, or null when no reward or no hidden bomb is left</returns>

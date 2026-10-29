@@ -1,8 +1,8 @@
 /*
  * Bing Shaw Lim
  * CST-250
- * 10/25/2026
- * Minesweeper - Milestone 1
+ * 10/28/2026
+ * Minesweeper - Milestone 2
  * Resources: CST-250 Project Milestone Guide (Grand Canyon University, 2025)
  */
 

@@ -1,8 +1,8 @@
 /*
  * Bing Shaw Lim
  * CST-250
- * 10/25/2026
- * Minesweeper - Milestone 1
+ * 10/28/2026
+ * Minesweeper - Milestone 2
  * Resources: CST-250 Project Milestone Guide (Grand Canyon University, 2025)
  */
 
@@ -24,6 +24,15 @@ namespace MinesweeperClassLibrary.Services.BusinessLogicLayer
 
         /// <summary>Calculate NumberOfBombNeighbors for every cell (9 for a bomb)</summary>
         void CountBombsNearby(BoardModel board);
+
+        /// <summary>Check whether a row and column are inside the board</summary>
+        bool IsOnBoard(BoardModel board, int row, int col);
+
+        /// <summary>Visit (clear) one cell and report what happened</summary>
+        MoveResult VisitCell(BoardModel board, int row, int col);
+
+        /// <summary>Place a flag on a cell, or remove the flag if one is already there</summary>
+        MoveResult ToggleFlag(BoardModel board, int row, int col);
 
         /// <summary>Inspect the board and return Won, Lost, or InProgress (StillPlaying)</summary>
         GameState DetermineGameState(BoardModel board);
