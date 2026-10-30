@@ -73,7 +73,7 @@ while (!victory && !death)
 if (victory)
 {
     Console.ForegroundColor = ConsoleColor.Green;
-    Console.WriteLine("You win! Every safe cell has been cleared.");
+    Console.WriteLine("You win! Every safe cell is cleared or every bomb is correctly flagged.");
     Console.ResetColor();
     TimeSpan elapsed = board.EndTime - board.StartTime;
     Console.WriteLine($"Time: {elapsed.TotalSeconds:F0} seconds. " +
