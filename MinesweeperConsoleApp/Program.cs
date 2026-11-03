@@ -1,8 +1,8 @@
 /*
  * Bing Shaw Lim
  * CST-250
- * 10/28/2026
- * Minesweeper Console App - Milestone 2
+ * 11/03/2026
+ * Minesweeper Console App - Milestone 3
  * Resources: CST-250 Project Milestone Guide (Grand Canyon University, 2025)
  */
 
@@ -138,9 +138,17 @@ static void ShowMoveMessage(MoveResult result, int row, int col)
         MoveResult.CellIsFlagged => $"Cell {row},{col} is flagged. Unflag it before visiting.",
         MoveResult.FlagPlaced => $"Flag placed on cell {row},{col}.",
         MoveResult.FlagRemoved => $"Flag removed from cell {row},{col}.",
+        MoveResult.AreaRevealed => $"Cell {row},{col} has no bombs nearby, so flood fill opened the area around it.",
+        MoveResult.AreaRevealedWithReward => $"Cell {row},{col} has no bombs nearby, so flood fill opened the area around it " +
+            "and found the special reward! You earned a Hint. Choose option 3 on a later turn to reveal a bomb.",
         _ => "That cell is not on the board."
     };
-    Console.ForegroundColor = result == MoveResult.RewardCollected ? ConsoleColor.Yellow : ConsoleColor.White;
+    Console.ForegroundColor = result switch
+    {
+        MoveResult.RewardCollected or MoveResult.AreaRevealedWithReward => ConsoleColor.Yellow,
+        MoveResult.AreaRevealed => ConsoleColor.Cyan,
+        _ => ConsoleColor.White
+    };
     Console.WriteLine(message);
     Console.ResetColor();
 }

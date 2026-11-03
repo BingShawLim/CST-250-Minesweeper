@@ -1,8 +1,8 @@
 /*
  * Bing Shaw Lim
  * CST-250
- * 10/28/2026
- * Minesweeper - Milestone 2
+ * 11/03/2026
+ * Minesweeper - Milestone 3
  * Resources: CST-250 Project Milestone Guide (Grand Canyon University, 2025)
  */
 
@@ -30,6 +30,12 @@ namespace MinesweeperClassLibrary.Services.BusinessLogicLayer
 
         /// <summary>Visit (clear) one cell and report what happened</summary>
         MoveResult VisitCell(BoardModel board, int row, int col);
+
+        /// <summary>
+        /// Recursively reveal the block of connected cells with no bomb neighbors, plus the
+        /// numbered cells around its edge. Returns how many cells were revealed.
+        /// </summary>
+        int FloodFill(BoardModel board, int row, int col);
 
         /// <summary>Place a flag on a cell, or remove the flag if one is already there</summary>
         MoveResult ToggleFlag(BoardModel board, int row, int col);

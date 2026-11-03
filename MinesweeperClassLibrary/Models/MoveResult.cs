@@ -1,8 +1,8 @@
 /*
  * Bing Shaw Lim
  * CST-250
- * 10/28/2026
- * Minesweeper - Milestone 2
+ * 11/03/2026
+ * Minesweeper - Milestone 3
  * Resources: CST-250 Project Milestone Guide (Grand Canyon University, 2025)
  */
 
@@ -29,6 +29,10 @@ namespace MinesweeperClassLibrary.Models
         // A flag was placed on the cell
         FlagPlaced,
         // A flag was removed from the cell
-        FlagRemoved
+        FlagRemoved,
+        // Milestone 3: the cell had no bomb neighbors, so flood fill opened the area around it
+        AreaRevealed,
+        // Milestone 3: flood fill opened an area and found the special reward in it
+        AreaRevealedWithReward
     }
 }

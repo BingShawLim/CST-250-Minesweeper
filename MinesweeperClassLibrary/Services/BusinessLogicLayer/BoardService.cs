@@ -1,8 +1,8 @@
 /*
  * Bing Shaw Lim
  * CST-250
- * 10/28/2026
- * Minesweeper - Milestone 2
+ * 11/03/2026
+ * Minesweeper - Milestone 3
  * Resources: CST-250 Project Milestone Guide (Grand Canyon University, 2025)
  */
 
@@ -162,8 +162,9 @@ namespace MinesweeperClassLibrary.Services.BusinessLogicLayer
 
         /// <summary>
         /// Visit (clear) one cell. The rules for a move live here, not in the user interface:
-        /// flagged cells are protected, a bomb loses the game, and a reward cell gives the
-        /// player one Hint to use later.
+        /// flagged cells are protected, a bomb loses the game, a reward cell gives the
+        /// player one Hint to use later, and (Milestone 3) a cell with no bomb neighbors
+        /// opens the whole empty area around it with the recursive FloodFill method.
         /// </summary>
         /// <param name="board">The board in play</param>
         /// <param name="row">Row of the cell to visit</param>
@@ -188,12 +189,26 @@ namespace MinesweeperClassLibrary.Services.BusinessLogicLayer
                 return MoveResult.AlreadyVisited;
             }
 
-            // Clear the cell
-            cell.IsVisited = true;
+            // A bomb ends the game
             if (cell.IsBomb)
             {
+                cell.IsVisited = true;
                 return MoveResult.BombHit;
             }
+
+            // Milestone 3: a cell with no bomb neighbors opens the empty area around it
+            if (cell.NumberOfBombNeighbors == 0)
+            {
+                int rewardsBefore = board.RewardsRemaining;
+                FloodFill(board, row, col);
+                // FloodFill collects a reward if the area it opened had one
+                return board.RewardsRemaining > rewardsBefore
+                    ? MoveResult.AreaRevealedWithReward
+                    : MoveResult.AreaRevealed;
+            }
+
+            // A numbered cell is cleared on its own
+            cell.IsVisited = true;
 
             // A reward cell gives the player one reward, then the reward is used up
             if (cell.HasSpecialReward)
@@ -203,6 +218,65 @@ namespace MinesweeperClassLibrary.Services.BusinessLogicLayer
             }
             return MoveResult.SafeCellVisited;
         } // End of VisitCell method
+
+        /// <summary>
+        /// Milestone 3: recursive flood fill. Reveals the block of connected cells that have
+        /// no bomb neighbors, plus the numbered cells along its edge, the same way
+        /// Minesweeper opens an empty area.
+        /// Base cases: the cell is off the board, already visited, flagged, or a bomb, or it
+        /// is a numbered cell (it is revealed, but the fill does not spread past it).
+        /// Recursive step: a revealed cell with no bomb neighbors calls FloodFill on all
+        /// 8 cells around it.
+        /// </summary>
+        /// <param name="board">The board in play</param>
+        /// <param name="row">Row of the cell to reveal</param>
+        /// <param name="col">Column of the cell to reveal</param>
+        /// <returns>How many cells this call and the calls it made revealed</returns>
+        public int FloodFill(BoardModel board, int row, int col)
+        {
+            // Base case: stop at the edge of the board
+            if (!IsOnBoard(board, row, col))
+            {
+                return 0;
+            }
+            CellModel cell = board.Cells[row, col];
+
+            // Base case: stop at cells that are already open, flagged by the player, or bombs
+            if (cell.IsVisited || cell.IsFlagged || cell.IsBomb)
+            {
+                return 0;
+            }
+
+            // Reveal this cell (mark it visited)
+            cell.IsVisited = true;
+            int cellsRevealed = 1;
+
+            // A reward found by the flood fill is collected for the player
+            if (cell.HasSpecialReward)
+            {
+                CollectReward(board, cell);
+            }
+
+            // Base case: a numbered cell is revealed, but the fill does not spread past it
+            if (cell.NumberOfBombNeighbors > 0)
+            {
+                return cellsRevealed;
+            }
+
+            // Recursive step: spread to the 8 surrounding cells
+            for (int rowOffset = -1; rowOffset <= 1; rowOffset++)
+            {
+                for (int colOffset = -1; colOffset <= 1; colOffset++)
+                {
+                    // Skip the cell itself
+                    if (rowOffset != 0 || colOffset != 0)
+                    {
+                        cellsRevealed += FloodFill(board, row + rowOffset, col + colOffset);
+                    }
+                }
+            }
+            return cellsRevealed;
+        } // End of FloodFill method
 
         /// <summary>
         /// Place a flag on an unvisited cell, or remove the flag if the cell is already flagged
