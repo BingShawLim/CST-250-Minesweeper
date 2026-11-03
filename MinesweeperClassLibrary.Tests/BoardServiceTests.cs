@@ -1,8 +1,8 @@
 /*
  * Bing Shaw Lim
  * CST-250
- * 10/28/2026
- * Minesweeper - Milestone 2 xUnit Tests
+ * 11/03/2026
+ * Minesweeper - Milestone 3 xUnit Tests
  * Resources: CST-250 Project Milestone Guide (Grand Canyon University, 2025)
  */
 
@@ -28,6 +28,32 @@ namespace MinesweeperClassLibrary.Tests
                 }
             }
             return count;
+        }
+
+        // Helper: count the cells that have been visited (opened)
+        private static int CountVisited(BoardModel board)
+        {
+            int count = 0;
+            foreach (CellModel cell in board.Cells)
+            {
+                if (cell.IsVisited)
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        // Helper: make a board, place bombs at the given cells, and count the neighbors
+        private static BoardModel CreateBoardWithBombs(BoardService service, int size, params (int Row, int Col)[] bombs)
+        {
+            BoardModel board = new BoardModel(size);
+            foreach ((int row, int col) in bombs)
+            {
+                board.Cells[row, col].IsBomb = true;
+            }
+            service.CountBombsNearby(board);
+            return board;
         }
 
         // The BoardModel constructor must place a CellModel at every location with its row and column
@@ -264,20 +290,23 @@ namespace MinesweeperClassLibrary.Tests
         // Milestone 2: player moves, game state, and the reward
         //----------------------------------------------------------
 
-        // Visiting a safe cell clears it
+        // Visiting a safe cell that has a bomb neighbor clears only that cell
         [Fact]
         public void VisitCell_ShouldMarkVisited_WhenCellIsSafe()
         {
-            // Arrange
+            // Arrange: the bomb in the center gives (0,2) one bomb neighbor
             BoardService service = new BoardService();
             BoardModel board = new BoardModel(3);
+            board.Cells[1, 1].IsBomb = true;
+            service.CountBombsNearby(board);
 
             // Act
             MoveResult result = service.VisitCell(board, 0, 2);
 
-            // Assert
+            // Assert: a numbered cell does not start a flood fill
             Assert.Equal(MoveResult.SafeCellVisited, result);
             Assert.True(board.Cells[0, 2].IsVisited);
+            Assert.Equal(1, CountVisited(board));
         }
 
         // Visiting a bomb returns BombHit and the game is lost
@@ -350,10 +379,12 @@ namespace MinesweeperClassLibrary.Tests
         [Fact]
         public void VisitCell_ShouldCollectReward_WhenCellHasSpecialReward()
         {
-            // Arrange
+            // Arrange: the bomb in the center makes (0,0) a numbered cell
             BoardService service = new BoardService();
             BoardModel board = new BoardModel(3);
+            board.Cells[1, 1].IsBomb = true;
             board.Cells[0, 0].HasSpecialReward = true;
+            service.CountBombsNearby(board);
 
             // Act
             MoveResult result = service.VisitCell(board, 0, 0);
@@ -435,8 +466,9 @@ namespace MinesweeperClassLibrary.Tests
             board.Cells[0, 0].HasSpecialReward = true;
             service.CountBombsNearby(board);
 
-            // Act: collect the reward, then use it
-            Assert.Equal(MoveResult.RewardCollected, service.VisitCell(board, 0, 0));
+            // Act: (0,0) has no bomb neighbors, so visiting it starts a flood fill that opens
+            // every safe cell and collects the reward on the way (Milestone 3). Then use the reward.
+            Assert.Equal(MoveResult.AreaRevealedWithReward, service.VisitCell(board, 0, 0));
             CellModel? revealed = service.UseSpecialBonus(board);
 
             // Assert: the Hint flagged the only bomb and the reward was spent
@@ -458,6 +490,187 @@ namespace MinesweeperClassLibrary.Tests
             }
 
             // Assert
+            Assert.Equal(GameState.Won, service.DetermineGameState(board));
+        }
+
+        //----------------------------------------------------------
+        // Milestone 3: recursive flood fill
+        //----------------------------------------------------------
+
+        // With no bombs, one flood fill opens the whole board
+        [Fact]
+        public void FloodFill_ShouldRevealEveryCell_WhenBoardHasNoBombs()
+        {
+            // Arrange
+            BoardService service = new BoardService();
+            BoardModel board = CreateBoardWithBombs(service, 4);
+
+            // Act
+            int revealed = service.FloodFill(board, 0, 0);
+
+            // Assert
+            Assert.Equal(16, revealed);
+            Assert.Equal(16, CountVisited(board));
+        }
+
+        // A column of bombs splits the board: the fill opens the left side and its numbered
+        // edge, but never crosses the bombs into the right side
+        [Fact]
+        public void FloodFill_ShouldStopAtNumberedCells_AndNotCrossTheBombs()
+        {
+            // Arrange: bombs fill column 2 of a 5 x 5 board
+            BoardService service = new BoardService();
+            BoardModel board = CreateBoardWithBombs(service, 5, (0, 2), (1, 2), (2, 2), (3, 2), (4, 2));
+
+            // Act
+            int revealed = service.FloodFill(board, 0, 0);
+
+            // Assert: columns 0 (no neighbors) and 1 (numbered edge) are open, columns 2 - 4 are not
+            Assert.Equal(10, revealed);
+            for (int row = 0; row < 5; row++)
+            {
+                Assert.True(board.Cells[row, 0].IsVisited);
+                Assert.True(board.Cells[row, 1].IsVisited);
+                Assert.False(board.Cells[row, 2].IsVisited);
+                Assert.False(board.Cells[row, 3].IsVisited);
+                Assert.False(board.Cells[row, 4].IsVisited);
+            }
+        }
+
+        // The fill opens the 8 numbered cells around a bomb (including the diagonals)
+        // and the bomb itself stays hidden
+        [Fact]
+        public void FloodFill_ShouldRevealNumbersAroundBomb_AndNeverTheBomb()
+        {
+            // Arrange: one bomb in the middle of a 5 x 5 board
+            BoardService service = new BoardService();
+            BoardModel board = CreateBoardWithBombs(service, 5, (2, 2));
+
+            // Act
+            int revealed = service.FloodFill(board, 0, 0);
+
+            // Assert: all 24 safe cells are open, so the game is won
+            Assert.Equal(24, revealed);
+            Assert.False(board.Cells[2, 2].IsVisited);
+            Assert.True(board.Cells[1, 1].IsVisited);
+            Assert.True(board.Cells[3, 3].IsVisited);
+            Assert.Equal(GameState.Won, service.DetermineGameState(board));
+        }
+
+        // Starting on a numbered cell reveals only that cell
+        [Fact]
+        public void FloodFill_ShouldRevealOneCell_WhenCellHasBombNeighbors()
+        {
+            // Arrange
+            BoardService service = new BoardService();
+            BoardModel board = CreateBoardWithBombs(service, 3, (1, 1));
+
+            // Act
+            int revealed = service.FloodFill(board, 0, 0);
+
+            // Assert
+            Assert.Equal(1, revealed);
+            Assert.Equal(1, CountVisited(board));
+        }
+
+        // A flag placed by the player is not opened by the fill
+        [Fact]
+        public void FloodFill_ShouldSkipFlaggedCells()
+        {
+            // Arrange
+            BoardService service = new BoardService();
+            BoardModel board = CreateBoardWithBombs(service, 4);
+            service.ToggleFlag(board, 3, 3);
+
+            // Act
+            int revealed = service.FloodFill(board, 0, 0);
+
+            // Assert
+            Assert.Equal(15, revealed);
+            Assert.True(board.Cells[3, 3].IsFlagged);
+            Assert.False(board.Cells[3, 3].IsVisited);
+        }
+
+        // The base cases: off the board or already visited returns 0 without recursing
+        [Theory]
+        [InlineData(-1, 0)]
+        [InlineData(0, -1)]
+        [InlineData(4, 0)]
+        [InlineData(0, 4)]
+        public void FloodFill_ShouldReturnZero_WhenOffBoard(int row, int col)
+        {
+            // Arrange
+            BoardService service = new BoardService();
+            BoardModel board = CreateBoardWithBombs(service, 4);
+
+            // Act and Assert
+            Assert.Equal(0, service.FloodFill(board, row, col));
+            Assert.Equal(0, CountVisited(board));
+        }
+
+        // A second flood fill on an area that is already open reveals nothing new
+        [Fact]
+        public void FloodFill_ShouldReturnZero_WhenCellAlreadyVisited()
+        {
+            // Arrange
+            BoardService service = new BoardService();
+            BoardModel board = CreateBoardWithBombs(service, 4);
+            service.FloodFill(board, 0, 0);
+
+            // Act and Assert
+            Assert.Equal(0, service.FloodFill(board, 2, 2));
+        }
+
+        // Visiting a cell with no bomb neighbors opens the area and reports AreaRevealed
+        [Fact]
+        public void VisitCell_ShouldReturnAreaRevealed_WhenCellHasNoBombNeighbors()
+        {
+            // Arrange: bombs fill column 2, so the right side is its own area
+            BoardService service = new BoardService();
+            BoardModel board = CreateBoardWithBombs(service, 5, (0, 2), (1, 2), (2, 2), (3, 2), (4, 2));
+
+            // Act
+            MoveResult result = service.VisitCell(board, 4, 4);
+
+            // Assert: the right side opened and the left side did not
+            Assert.Equal(MoveResult.AreaRevealed, result);
+            Assert.True(board.Cells[0, 3].IsVisited);
+            Assert.False(board.Cells[0, 0].IsVisited);
+            Assert.Equal(GameState.InProgress, service.DetermineGameState(board));
+        }
+
+        // A reward inside the opened area is collected for the player
+        [Fact]
+        public void VisitCell_ShouldCollectReward_WhenFloodFillReachesRewardCell()
+        {
+            // Arrange: the reward is in the far corner from where the player clicks
+            BoardService service = new BoardService();
+            BoardModel board = CreateBoardWithBombs(service, 5, (2, 2));
+            board.Cells[4, 4].HasSpecialReward = true;
+
+            // Act
+            MoveResult result = service.VisitCell(board, 0, 0);
+
+            // Assert
+            Assert.Equal(MoveResult.AreaRevealedWithReward, result);
+            Assert.Equal(1, board.RewardsRemaining);
+            Assert.False(board.Cells[4, 4].HasSpecialReward);
+        }
+
+        // The recursion handles the largest board (20 x 20) without running out of stack
+        [Fact]
+        public void FloodFill_ShouldOpenLargestBoard_WithOneVisit()
+        {
+            // Arrange
+            BoardService service = new BoardService();
+            BoardModel board = CreateBoardWithBombs(service, 20);
+
+            // Act
+            MoveResult result = service.VisitCell(board, 10, 10);
+
+            // Assert
+            Assert.Equal(MoveResult.AreaRevealed, result);
+            Assert.Equal(400, CountVisited(board));
             Assert.Equal(GameState.Won, service.DetermineGameState(board));
         }
     }
