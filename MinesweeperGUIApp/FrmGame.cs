@@ -89,7 +89,9 @@ namespace MinesweeperGUIApp
         {
             // Calculate the size of each button from the panel size
             int buttonSize = pnlBoard.Width / _board.Size;
-            float fontSize = Math.Max(8F, buttonSize / 2.6F);
+            // Numbers fill about 40% of a button. Pixels are converted to points with the
+            // screen DPI so the text fits on any display scaling.
+            float fontSize = Math.Max(7F, buttonSize * 0.4F * 72F / DeviceDpi);
 
             // Shrink the panel so the grid fits exactly
             pnlBoard.Width = buttonSize * _board.Size;
