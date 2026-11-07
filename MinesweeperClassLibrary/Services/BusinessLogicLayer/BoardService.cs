@@ -1,8 +1,8 @@
 /*
  * Bing Shaw Lim
  * CST-250
- * 11/03/2026
- * Minesweeper - Milestone 3
+ * 11/07/2026
+ * Minesweeper - Milestone 4
  * Resources: CST-250 Project Milestone Guide (Grand Canyon University, 2025)
  */
 
@@ -415,5 +415,42 @@ namespace MinesweeperClassLibrary.Services.BusinessLogicLayer
             int penalty = rewardsUsed * 50;
             return Math.Max(0, baseScore + timeBonus - penalty);
         } // End of DetermineFinalScore method
+
+        /// <summary>
+        /// Milestone 4: count the bombs on the board. The GUI shows this number, but the
+        /// counting rule stays in the business logic layer.
+        /// </summary>
+        /// <param name="board">The board in play</param>
+        /// <returns>The number of bomb cells</returns>
+        public int CountBombs(BoardModel board)
+        {
+            int bombs = 0;
+            foreach (CellModel cell in board.Cells)
+            {
+                if (cell.IsBomb)
+                {
+                    bombs++;
+                }
+            }
+            return bombs;
+        } // End of CountBombs method
+
+        /// <summary>
+        /// Milestone 4: count the flags the player has placed (including flags placed by the Hint reward)
+        /// </summary>
+        /// <param name="board">The board in play</param>
+        /// <returns>The number of flagged cells</returns>
+        public int CountFlags(BoardModel board)
+        {
+            int flags = 0;
+            foreach (CellModel cell in board.Cells)
+            {
+                if (cell.IsFlagged)
+                {
+                    flags++;
+                }
+            }
+            return flags;
+        } // End of CountFlags method
     }
 }

@@ -1,8 +1,8 @@
 /*
  * Bing Shaw Lim
  * CST-250
- * 11/03/2026
- * Minesweeper - Milestone 3
+ * 11/07/2026
+ * Minesweeper - Milestone 4
  * Resources: CST-250 Project Milestone Guide (Grand Canyon University, 2025)
  */
 
@@ -11,8 +11,8 @@ using MinesweeperClassLibrary.Models;
 namespace MinesweeperClassLibrary.Services.BusinessLogicLayer
 {
     /// <summary>
-    /// Abstraction for all board behavior. The console app (and later the GUI) only
-    /// depends on this contract, not on how the rules are implemented.
+    /// Abstraction for all board behavior. The console app and the Milestone 4 GUI only
+    /// depend on this contract, not on how the rules are implemented.
     /// </summary>
     public interface IBoardService
     {
@@ -48,5 +48,11 @@ namespace MinesweeperClassLibrary.Services.BusinessLogicLayer
 
         /// <summary>Calculate the final score from difficulty, time, size, and rewards used</summary>
         int DetermineFinalScore(BoardModel board, int rewardsUsed);
+
+        /// <summary>Milestone 4: count the bombs on the board (for the GUI status label)</summary>
+        int CountBombs(BoardModel board);
+
+        /// <summary>Milestone 4: count the flags the player has placed (for the GUI status label)</summary>
+        int CountFlags(BoardModel board);
     }
 }
