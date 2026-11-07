@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinesweeperClassLibrary.Tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinesweeperConsoleApp", "MinesweeperConsoleApp\MinesweeperConsoleApp.csproj", "{892F9F84-5C9E-4F93-8E39-4084DC506E23}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinesweeperGUIApp", "MinesweeperGUIApp\MinesweeperGUIApp.csproj", "{37D9405C-4A29-435F-8842-F4343C460FF0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,6 +20,10 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{37D9405C-4A29-435F-8842-F4343C460FF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37D9405C-4A29-435F-8842-F4343C460FF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37D9405C-4A29-435F-8842-F4343C460FF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37D9405C-4A29-435F-8842-F4343C460FF0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FB28C12F-B4D3-4233-BBC6-C60497A69CAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FB28C12F-B4D3-4233-BBC6-C60497A69CAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB28C12F-B4D3-4233-BBC6-C60497A69CAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
