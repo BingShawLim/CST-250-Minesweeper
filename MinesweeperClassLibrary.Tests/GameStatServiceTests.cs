@@ -229,7 +229,7 @@ namespace MinesweeperClassLibrary.Tests
 
             // Assert
             Assert.Contains("Could not load", message);
-            Assert.Equal(0, service.Stats.Count);
+            Assert.Empty(service.Stats);
         }
 
         // Damaged lines in the text file are skipped

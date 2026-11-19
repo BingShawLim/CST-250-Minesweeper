@@ -159,6 +159,16 @@ namespace MinesweeperGUIApp
             btnStartGame.UseVisualStyleBackColor = true;
             btnStartGame.Click += BtnStartGameClickEH;
             //
+            // btnHighScores
+            //
+            btnHighScores.Location = new Point(142, 270);
+            btnHighScores.Name = "btnHighScores";
+            btnHighScores.Size = new Size(110, 42);
+            btnHighScores.TabIndex = 7;
+            btnHighScores.Text = "High Scores";
+            btnHighScores.UseVisualStyleBackColor = true;
+            btnHighScores.Click += BtnHighScoresClickEH;
+            //
             // btnExit
             //
             btnExit.Location = new Point(262, 270);
