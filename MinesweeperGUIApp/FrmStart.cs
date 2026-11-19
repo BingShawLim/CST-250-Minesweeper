@@ -1,8 +1,8 @@
 /*
  * Bing Shaw Lim
  * CST-250
- * 11/07/2026
- * Minesweeper GUI - Milestone 4
+ * 11/07/2026 (updated 11/18/2026 for Milestone 5)
+ * Minesweeper GUI - Milestones 4 and 5
  * Resources: CST-250 Project Milestone Guide (Grand Canyon University, 2025)
  */
 
@@ -13,9 +13,14 @@ namespace MinesweeperGUIApp
     /// <summary>
     /// Start form. Gets the board size (track bar) and difficulty (radio buttons) from the
     /// player, then passes them to FrmGame. Closing FrmGame brings the player back here.
+    /// Milestone 5: owns one game stats service so the high score list lasts for every
+    /// game played while the app is open.
     /// </summary>
     public partial class FrmStart : Form
     {
+        // Class level variables: one stats list shared by every game in this session
+        private readonly IGameStatService _statService = new GameStatService();
+
         /// <summary>
         /// Default constructor for FrmStart
         /// </summary>
@@ -85,7 +90,7 @@ namespace MinesweeperGUIApp
         private void BtnStartGameClickEH(object sender, EventArgs e)
         {
             // Create the game form with the player's choices
-            using (FrmGame frmGame = new FrmGame(trbSize.Value, GetSelectedDifficulty()))
+            using (FrmGame frmGame = new FrmGame(trbSize.Value, GetSelectedDifficulty(), _statService))
             {
                 // Hide this form while the game is played
                 Hide();
@@ -94,6 +99,19 @@ namespace MinesweeperGUIApp
             // The game form closed, so come back to the start form
             Show();
         } // End of BtnStartGameClickEH method
+
+        /// <summary>
+        /// Click event handler for btnHighScores: open Form4 to view, sort, save, or load the stats
+        /// </summary>
+        /// <param name="sender">btnHighScores</param>
+        /// <param name="e">Event arguments</param>
+        private void BtnHighScoresClickEH(object sender, EventArgs e)
+        {
+            using (FrmGameStats frmGameStats = new FrmGameStats(_statService))
+            {
+                frmGameStats.ShowDialog(this);
+            }
+        } // End of BtnHighScoresClickEH method
 
         /// <summary>
         /// Click event handler for btnExit: close the application

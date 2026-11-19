@@ -38,6 +38,7 @@ namespace MinesweeperGUIApp
             rdoEasy = new RadioButton();
             lblBombPreview = new Label();
             btnStartGame = new Button();
+            btnHighScores = new Button();
             btnExit = new Button();
             ((System.ComponentModel.ISupportInitialize)trbSize).BeginInit();
             grpDifficulty.SuspendLayout();
@@ -152,7 +153,7 @@ namespace MinesweeperGUIApp
             btnStartGame.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             btnStartGame.Location = new Point(22, 270);
             btnStartGame.Name = "btnStartGame";
-            btnStartGame.Size = new Size(170, 42);
+            btnStartGame.Size = new Size(110, 42);
             btnStartGame.TabIndex = 6;
             btnStartGame.Text = "Start Game";
             btnStartGame.UseVisualStyleBackColor = true;
@@ -160,10 +161,10 @@ namespace MinesweeperGUIApp
             //
             // btnExit
             //
-            btnExit.Location = new Point(202, 270);
+            btnExit.Location = new Point(262, 270);
             btnExit.Name = "btnExit";
-            btnExit.Size = new Size(170, 42);
-            btnExit.TabIndex = 7;
+            btnExit.Size = new Size(110, 42);
+            btnExit.TabIndex = 8;
             btnExit.Text = "Exit";
             btnExit.UseVisualStyleBackColor = true;
             btnExit.Click += BtnExitClickEH;
@@ -175,6 +176,7 @@ namespace MinesweeperGUIApp
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(394, 330);
             Controls.Add(btnExit);
+            Controls.Add(btnHighScores);
             Controls.Add(btnStartGame);
             Controls.Add(lblBombPreview);
             Controls.Add(grpDifficulty);
@@ -207,6 +209,7 @@ namespace MinesweeperGUIApp
         private RadioButton rdoHard;
         private Label lblBombPreview;
         private Button btnStartGame;
+        private Button btnHighScores;
         private Button btnExit;
     }
 }

@@ -1,8 +1,8 @@
 /*
  * Bing Shaw Lim
  * CST-250
- * 11/07/2026
- * Minesweeper GUI - Milestone 4
+ * 11/07/2026 (updated 11/18/2026 for Milestone 5)
+ * Minesweeper GUI - Milestones 4 and 5
  * Resources: CST-250 Project Milestone Guide (Grand Canyon University, 2025);
  *            CST-250 Activity 2 Guide (button grid technique from the Chessboard app)
  */
@@ -26,6 +26,8 @@ namespace MinesweeperGUIApp
         private Button[,] _buttons;
         private int _rewardsUsed;
         private bool _isGameOver;
+        // Milestone 5: shared high score list from FrmStart
+        private readonly IGameStatService _statService;
 
         // Button faces built from the game assets (null if an asset file is missing)
         private Image? _tileFace;
@@ -38,9 +40,11 @@ namespace MinesweeperGUIApp
         /// </summary>
         /// <param name="size">Length and width of the board (from FrmStart)</param>
         /// <param name="difficulty">1 = easy, 2 = medium, 3 = hard (from FrmStart)</param>
-        public FrmGame(int size, int difficulty)
+        /// <param name="statService">High score list shared by every game (Milestone 5)</param>
+        public FrmGame(int size, int difficulty, IGameStatService statService)
         {
             InitializeComponent();
+            _statService = statService;
 
             // The form depends on the IBoardService abstraction, not the concrete class
             _boardService = new BoardService();
@@ -380,8 +384,8 @@ namespace MinesweeperGUIApp
             if (state == GameState.Won)
             {
                 lblMessage.Text = $"You win! Score: {score}";
-                MessageBox.Show($"You cleared the board in {elapsed.TotalSeconds:F0} seconds.\nScore: {score}",
-                    "You Win!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // Milestone 5: Form3 gets the winner's name, then Form4 adds it to the high scores
+                ShowWinnerForms(score, elapsed);
             }
             else
             {
@@ -390,6 +394,28 @@ namespace MinesweeperGUIApp
                     "Game Over", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         } // End of EndGame method
+
+        /// <summary>
+        /// Milestone 5: show Form3 (FrmWinnerName) to get the winner's name, then pass the
+        /// name and score to Form4 (FrmGameStats), which shows the list of winners' scores
+        /// </summary>
+        /// <param name="score">Final score from the business logic layer</param>
+        /// <param name="gameTime">How long the winning game took</param>
+        private void ShowWinnerForms(int score, TimeSpan gameTime)
+        {
+            using (FrmWinnerName frmWinnerName = new FrmWinnerName(score, gameTime, _statService))
+            {
+                // The player can close Form3 without a name; then the score is not saved
+                if (frmWinnerName.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                using (FrmGameStats frmGameStats = new FrmGameStats(_statService, frmWinnerName.WinnerName, score, gameTime))
+                {
+                    frmGameStats.ShowDialog(this);
+                }
+            }
+        } // End of ShowWinnerForms method
 
         /// <summary>
         /// Update the bombs, flags, and rewards labels and the Use Hint button.
