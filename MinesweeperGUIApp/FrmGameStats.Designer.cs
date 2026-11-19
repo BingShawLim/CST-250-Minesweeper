@@ -50,7 +50,7 @@ namespace MinesweeperGUIApp
             mnsMain.Items.AddRange(new ToolStripItem[] { tsmFile, tsmSort });
             mnsMain.Location = new Point(0, 0);
             mnsMain.Name = "mnsMain";
-            mnsMain.Size = new Size(582, 28);
+            mnsMain.Size = new Size(700, 28);
             mnsMain.TabIndex = 0;
             //
             // tsmFile
@@ -132,13 +132,13 @@ namespace MinesweeperGUIApp
             dgvStats.RowHeadersVisible = false;
             dgvStats.RowHeadersWidth = 51;
             dgvStats.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvStats.Size = new Size(558, 280);
+            dgvStats.Size = new Size(676, 280);
             dgvStats.TabIndex = 1;
             // 
             // btnOk
             // 
             btnOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnOk.Location = new Point(476, 356);
+            btnOk.Location = new Point(594, 356);
             btnOk.Name = "btnOk";
             btnOk.Size = new Size(94, 32);
             btnOk.TabIndex = 3;
@@ -151,7 +151,7 @@ namespace MinesweeperGUIApp
             AcceptButton = btnOk;
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(582, 400);
+            ClientSize = new Size(700, 400);
             MinimumSize = new Size(500, 330);
             Controls.Add(btnOk);
             Controls.Add(dgvStats);

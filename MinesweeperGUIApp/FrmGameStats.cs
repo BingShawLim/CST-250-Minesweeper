@@ -181,6 +181,12 @@ namespace MinesweeperGUIApp
                 dgvStats.Columns["GameTime"]!.HeaderText = "Game Time";
                 dgvStats.Columns["GameTime"]!.DefaultCellStyle.Format = @"mm\:ss";
                 dgvStats.Columns["Date"]!.DefaultCellStyle.Format = "MM/dd/yyyy h:mm tt";
+                // Give the date the most room and the id the least
+                dgvStats.Columns["Id"]!.FillWeight = 35;
+                dgvStats.Columns["Name"]!.FillWeight = 110;
+                dgvStats.Columns["Score"]!.FillWeight = 65;
+                dgvStats.Columns["GameTime"]!.FillWeight = 80;
+                dgvStats.Columns["Date"]!.FillWeight = 150;
             }
 
             // Highlight the game that was just won; otherwise select nothing
