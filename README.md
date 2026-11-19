@@ -1,11 +1,18 @@
-# CST-250 Minesweeper - Milestone 4 (Bing Shaw Lim)
+# CST-250 Minesweeper - Milestone 5 (Bing Shaw Lim)
 
 | Project | Purpose |
 |---|---|
-| MinesweeperClassLibrary | Models (CellModel, BoardModel, GameState, MoveResult) and Services/BusinessLogicLayer (IBoardService, BoardService, DifficultyBase + Easy/Medium/Hard) |
-| MinesweeperClassLibrary.Tests | xUnit tests for the business logic layer (46 test cases) |
-| MinesweeperGUIApp | Windows Forms game (Milestone 4): FrmStart picks the size and difficulty, FrmGame is the clickable board |
+| MinesweeperClassLibrary | Models (CellModel, BoardModel, GameState, MoveResult, GameStatModel), Services/BusinessLogicLayer (IBoardService, BoardService, DifficultyBase + Easy/Medium/Hard, IGameStatService, GameStatService, GameStatSorter + SortByName/SortByScore/SortByDate), and Services/DataAccessLayer (IGameStatDAO, GameStatTextFileDAO) |
+| MinesweeperClassLibrary.Tests | xUnit tests for the business logic and data access layers (62 test cases) |
+| MinesweeperGUIApp | Windows Forms game: FrmStart picks the size and difficulty, FrmGame is the clickable board, FrmWinnerName (Form3) and FrmGameStats (Form4) handle the high scores |
 | MinesweeperConsoleApp | Playable console game: choose a size and difficulty, then Visit, Flag/Unflag, or Use Reward each turn until you win or hit a bomb |
+
+**Milestone 5 features:** game statistics and high scores for winning games.
+- `GameStatModel` (the guide's GameStat class): Id, Name, Score, GameTime, and Date.
+- Form3 (`FrmWinnerName`) opens after a win, shows the score and time, and gets the winner's name (1 to 20 letters, digits, or spaces, checked by `GameStatService.IsValidName`).
+- The game form passes the name and score to Form4 (`FrmGameStats`), which adds the game to the list and shows every winner in a DataGridView.
+- Form4 menus: File > Save, Load, Exit (text file through `GameStatTextFileDAO`, one line per game) and Sort > By Name, By Score, By Date (polymorphism: each menu passes a different `GameStatSorter` subclass to `GameStatService.Sort`).
+- `FrmStart` keeps one `GameStatService`, so the list lasts for every game while the app is open; its High Scores button opens Form4 at any time (for example, to load a saved file).
 
 **Milestone 4 features:** a Windows Forms version of the game on the same class library.
 - `FrmStart` (startup form in `Program.cs`): a TrackBar picks the board size (5 to 20) and radio buttons pick Easy, Medium, or Hard; a label previews the bomb count. Start Game passes both values to `FrmGame`.
