@@ -38,10 +38,11 @@ namespace MinesweeperClassLibrary.Services.BusinessLogicLayer
         /// <inheritdoc/>
         public override List<GameStatModel> Sort(IEnumerable<GameStatModel> stats)
         {
+            // LINQ: A to Z by name, then the higher score first for the same name
             return stats.OrderBy(stat => stat.Name, StringComparer.OrdinalIgnoreCase)
                 .ThenByDescending(stat => stat.Score)
                 .ToList();
-        }
+        } // End of Sort method
     }
 
     /// <summary>
@@ -55,10 +56,11 @@ namespace MinesweeperClassLibrary.Services.BusinessLogicLayer
         /// <inheritdoc/>
         public override List<GameStatModel> Sort(IEnumerable<GameStatModel> stats)
         {
+            // LINQ: highest score first, then the faster game first on a tie
             return stats.OrderByDescending(stat => stat.Score)
                 .ThenBy(stat => stat.GameTime)
                 .ToList();
-        }
+        } // End of Sort method
     }
 
     /// <summary>
@@ -72,7 +74,8 @@ namespace MinesweeperClassLibrary.Services.BusinessLogicLayer
         /// <inheritdoc/>
         public override List<GameStatModel> Sort(IEnumerable<GameStatModel> stats)
         {
+            // LINQ: the most recent game first
             return stats.OrderByDescending(stat => stat.Date).ToList();
-        }
+        } // End of Sort method
     }
 }
